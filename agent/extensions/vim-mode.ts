@@ -141,7 +141,7 @@ class VimEditor extends CustomEditor {
     // border glyphs; autocomplete rows follow it and stay outside the box.
     let bottomIndex = -1;
     for (let index = 1; index < inner.length; index++) {
-      if (isRuleLine(inner[index]!)) {
+      if (isRuleLine(inner[index])) {
         bottomIndex = index;
         break;
       }
@@ -149,14 +149,14 @@ class VimEditor extends CustomEditor {
     if (bottomIndex === -1) return super.render(width);
 
     const border = (text: string) => this.borderColor(text);
-    const lines: string[] = [this.buildBorder(width, "top", inner[0]!)];
+    const lines: string[] = [this.buildBorder(width, "top", inner[0])];
     for (let index = 1; index < bottomIndex; index++) {
-      lines.push(border("│") + inner[index]! + border("│"));
+      lines.push(border("│") + inner[index] + border("│"));
     }
-    lines.push(this.buildBorder(width, "bottom", inner[bottomIndex]!));
+    lines.push(this.buildBorder(width, "bottom", inner[bottomIndex]));
     // Autocomplete rows stay below the box, aligned with its interior.
     for (let index = bottomIndex + 1; index < inner.length; index++) {
-      lines.push(` ${inner[index]!} `);
+      lines.push(` ${inner[index]} `);
     }
     return lines;
   }
@@ -409,7 +409,7 @@ class VimEditor extends CustomEditor {
         super.handleInput("\x1b[3~");
         super.handleInput(data);
       }
-      this.handleInput = VimEditor.prototype.handleInput;
+      this.handleInput = (data) => VimEditor.prototype.handleInput.call(this, data);
       this.requestRender();
     };
     this.handleInput = receiveReplacement;

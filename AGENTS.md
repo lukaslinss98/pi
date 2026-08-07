@@ -78,17 +78,27 @@ Ghostty terminal theme configuration. Contains a single `theme` field.
 
 ## Validation
 
-Before committing changes, run:
+The repo root has an npm project (`package.json`) purely for tooling — the pi SDK is a
+devDependency so extension types resolve locally and in editors. `node_modules/` is
+gitignored; run `npm install` after cloning.
 
 ```bash
+# Lint extensions (typescript-eslint, type-checked; no-explicit-any and
+# no-unsafe-* are errors)
+npm run lint
+
+# Type-check extensions
+npm run typecheck
+
 # Validate JSON files
 jq . agent/settings.json > /dev/null
 jq . agent/keybindings.json > /dev/null
 jq . agent/ghostty-theme.json > /dev/null
-
-# Type-check extension
-cd agent/extensions && npx tsc --noEmit vim-mode.ts
 ```
+
+**Keep the SDK devDependencies in sync with the globally installed pi version**
+(`npm i -g @earendil-works/pi-coding-agent`); bump them in `package.json` after
+upgrading pi so lint/typecheck match the runtime.
 
 ## Environment
 
