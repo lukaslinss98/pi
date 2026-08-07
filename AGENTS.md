@@ -43,13 +43,16 @@ The primary config file. Must remain valid JSON. Key fields:
 
 ### `agent/extensions/vim-mode.ts`
 A TypeScript extension implementing vim-mode in the pi TUI. Uses the `@earendil-works/pi-coding-agent` SDK. Contains:
-- Mode switching (`normal` ↔ `insert`)
-- Motion commands (`h/j/k/l`, `w/W`, `b/B`, `e/E`, `0`, `^`, `$`, `{`, `}`, `gg`, `G`, `%`, `f/F/t/T`)
-- Operators (`d`, `y`, `c`, `x`, `X`, `s`, `S`, `dd`, `yy`, `cc`, `D`, `C`, `Y`, `p`, `P`, `.`)
-- Searching (`/`, `?`, `n`, `N`, `*`, `#`)
-- Visual mode (`v`, `V`, `d`, `y`, `c`)
-- Register support, undo history, marks, scroll, status bar indicator
-- `gi` (go to last insert position), `ZZ`/`ZQ` (save/quit semantics)
+- Mode switching (`normal` ↔ `insert`, autocomplete-aware escape)
+- Counts and motions (`h/j/k/l`, `w/b/e`, `0/^/$`, `gg/G`, `f/F/t/T`)
+- Operators (`d/c/y` with motions and line-doubling, `x/X`, `D/C/s/S`, `r`, `p/P`, `u`)
+- `/vim [on|off]` command, persisted via `vimMode` in `settings.json`
+- Telescope-style boxed prompt: rounded corners (`╭╮╰╯`), `│` side borders, and the
+  current mode (+ pending count/operator) as a colored title in the bottom-right of
+  the border.
+  Rendering wraps `super.render(width - 2)`; the bottom rule is located by scanning for
+  a glyphs-only rule line (`isRuleLine`), and pi's `↑/↓ N more` scroll indicators are
+  re-embedded in the rebuilt borders. Autocomplete rows stay below the box.
 
 ### `agent/keybindings.json`
 Custom keybindings for the TUI. Currently used to override `ctrl+p`/`ctrl+n` for select navigation and disable model cycling. Reference: `docs/keybindings.md`.
@@ -71,6 +74,7 @@ Ghostty terminal theme configuration. Contains a single `theme` field.
 4. **Skills** are loaded from external directories (referenced in `settings.json` via `skills` array). The skills directory `~/dev/agent-skills/` is the primary source.
 5. **Packages** are references to external resources. When adding a new package in `settings.json`, ensure the reference format is correct (`git:github.com/...`, `npm:...`, etc.).
 6. **Session history** files (`*.jsonl`) are append-only logs. They can be read for debugging but never edited.
+7. **Code quality** — all code written for extensions or anywhere in this repo must be clean, maintainable, and type-safe. No hacks or quick-and-dirty workarounds allowed.
 
 ## Validation
 

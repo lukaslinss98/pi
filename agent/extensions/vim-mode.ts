@@ -1,8 +1,14 @@
-import { CustomEditor, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
+import {
+  CustomEditor,
+  type ExtensionAPI,
+  type ExtensionContext,
+  type KeybindingsManager,
+  type Theme,
+} from "@earendil-works/pi-coding-agent";
 import { readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { matchesKey, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { matchesKey, visibleWidth, type EditorTheme, type TUI } from "@earendil-works/pi-tui";
 
 const SETTINGS_PATH = join(process.env.PI_CODING_AGENT_DIR ?? join(homedir(), ".pi", "agent"), "settings.json");
 
@@ -30,6 +36,21 @@ type Mode = "normal" | "insert";
 type Operator = "change" | "delete" | "yank";
 type FindKind = "f" | "F" | "t" | "T";
 
+/** Strip SGR color sequences (border lines arrive pre-colored by the theme). */
+function stripSgr(text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, "");
+}
+
+/**
+ * A rule line is made of border glyphs only: ─, spaces, and pi's scroll
+ * indicator text ("↑ 3 more"). Content lines virtually never match this —
+ * the ─ character cannot be typed from a keyboard.
+ */
+function isRuleLine(line: string): boolean {
+  const plain = stripSgr(line);
+  return plain.includes("─") && /^[─ ↑↓0-9more]*$/.test(plain);
+}
+
 /**
  * A modal editor for Pi's prompt.
  *
@@ -44,6 +65,13 @@ class VimEditor extends CustomEditor {
   private operator?: Operator;
   private findKind?: FindKind;
   private register = "";
+  private getUiTheme: () => Theme;
+
+  constructor(tui: TUI, theme: EditorTheme, keybindings: KeybindingsManager, getUiTheme: () => Theme) {
+    // paddingX 1 keeps one space between the side borders and the text.
+    super(tui, theme, keybindings, { paddingX: 1 });
+    this.getUiTheme = getUiTheme;
+  }
 
   handleInput(data: string): void {
     if (this.handleEscape(data)) return;
@@ -98,16 +126,98 @@ class VimEditor extends CustomEditor {
   }
 
   render(width: number): string[] {
-    const lines = super.render(width);
-    if (lines.length === 0) return lines;
+    // Too narrow for a framed box: fall back to pi's default chrome.
+    if (width < 12) return super.render(width);
 
-    const pending = this.operator ? ` ${this.operator.toUpperCase()} ` : this.findKind ? " FIND " : "";
-    const label = ` ${this.mode.toUpperCase()}${pending}`;
-    const last = lines.length - 1;
-    if (visibleWidth(lines[last]!) >= label.length) {
-      lines[last] = truncateToWidth(lines[last]!, width - label.length, "") + label;
+    // Render the editor two columns narrower, then wrap it in a box:
+    // ╭──────────────────────╮
+    // │ prompt text          │
+    // ╰─────────── NORMAL ──╯
+    const inner = super.render(width - 2);
+    if (inner.length < 3) return inner;
+
+    // The editor renders [top rule, ...content, bottom rule, ...autocomplete].
+    // The bottom rule is the first line after the top rule made purely of
+    // border glyphs; autocomplete rows follow it and stay outside the box.
+    let bottomIndex = -1;
+    for (let index = 1; index < inner.length; index++) {
+      if (isRuleLine(inner[index]!)) {
+        bottomIndex = index;
+        break;
+      }
+    }
+    if (bottomIndex === -1) return super.render(width);
+
+    const border = (text: string) => this.borderColor(text);
+    const lines: string[] = [this.buildBorder(width, "top", inner[0]!)];
+    for (let index = 1; index < bottomIndex; index++) {
+      lines.push(border("│") + inner[index]! + border("│"));
+    }
+    lines.push(this.buildBorder(width, "bottom", inner[bottomIndex]!));
+    // Autocomplete rows stay below the box, aligned with its interior.
+    for (let index = bottomIndex + 1; index < inner.length; index++) {
+      lines.push(` ${inner[index]!} `);
     }
     return lines;
+  }
+
+  /**
+   * Telescope-style rule with rounded corners. The mode title sits in the
+   * bottom-right cutout (╰──── NORMAL ──╯); pi's scroll indicator is kept
+   * right-aligned on the top border and left-aligned on the bottom border.
+   */
+  private buildBorder(width: number, position: "top" | "bottom", original: string): string {
+    const border = (text: string) => this.borderColor(text);
+    const [cornerLeft, cornerRight] = position === "top" ? ["╭", "╮"] : ["╰", "╯"];
+
+    // Preserve pi's scroll indicator ("↑ 3 more" / "↓ 2 more") if present.
+    const scroll = stripSgr(original).match(/[↑↓] \d+ more/)?.[0] ?? "";
+    const scrollSegment = scroll ? border(` ${scroll} `) : "";
+    const scrollWidth = scroll ? scroll.length + 2 : 0;
+
+    const title = position === "bottom" ? this.modeTitle() : "";
+    const titleSegment = title ? ` ${title} ` : "";
+
+    // Two dashes anchor a segment to its corner.
+    const edgeDashes = 2;
+    const fill =
+      width - 2 - scrollWidth - visibleWidth(titleSegment) - (scroll ? edgeDashes : 0) - (title ? edgeDashes : 0);
+    if (fill < 2) {
+      return border(cornerLeft) + border("─".repeat(Math.max(0, width - 2))) + border(cornerRight);
+    }
+
+    if (position === "top") {
+      // ╭──────────────── ↑ 3 more ──╮
+      return (
+        border(cornerLeft) +
+        border("─".repeat(fill)) +
+        scrollSegment +
+        (scroll ? border("─".repeat(edgeDashes)) : "") +
+        border(cornerRight)
+      );
+    }
+
+    // ╰── ↓ 2 more ──────── NORMAL ──╯
+    return (
+      border(cornerLeft) +
+      (scroll ? border("─".repeat(edgeDashes)) + scrollSegment : "") +
+      border("─".repeat(fill)) +
+      titleSegment +
+      (title ? border("─".repeat(edgeDashes)) : "") +
+      border(cornerRight)
+    );
+  }
+
+  /** The border title: current mode plus any pending count/operator. */
+  private modeTitle(): string {
+    const parts = [this.mode.toUpperCase()];
+    if (this.count) parts.push(this.count);
+    if (this.operator) parts.push(this.operator.toUpperCase());
+    else if (this.findKind) parts.push("FIND");
+
+    const theme = this.getUiTheme();
+    const color = this.operator || this.findKind ? "warning" : this.mode === "insert" ? "success" : "accent";
+    return theme.bold(theme.fg(color, parts.join(" ")));
   }
 
   private handleEscape(data: string): boolean {
@@ -342,7 +452,9 @@ export default function (pi: ExtensionAPI) {
   const apply = (ctx: ExtensionContext) => {
     if (ctx.mode !== "tui") return;
     ctx.ui.setEditorComponent(
-      enabled ? (tui, theme, keybindings) => new VimEditor(tui, theme, keybindings) : undefined,
+      enabled
+        ? (tui, theme, keybindings) => new VimEditor(tui, theme, keybindings, () => ctx.ui.theme)
+        : undefined,
     );
   };
 
