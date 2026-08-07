@@ -1,0 +1,22 @@
+{
+  "lastChangelogVersion": "0.84.1",
+  "defaultProvider": "openrouter",
+  "defaultModel": "deepseek/deepseek-v4-flash",
+  "theme": "ansi-dark",
+  "defaultThinkingLevel": "high",
+  "skills": [
+    "~/dev/agent-skills/"
+  ],
+  "packages": [
+    "git:github.com/leblancfg/pi-ansi-themes",
+    "npm:@tombell/pi-status",
+    "npm:pi-web-access",
+    "npm:@juicesharp/rpiv-btw",
+    "npm:pi-ghostty-theme"
+  ],
+  "hideThinkingBlock": true,
+  "vimMode": true,
+  "extensions": [
+    "+extensions/vim-mode.ts"
+  ]
+}
