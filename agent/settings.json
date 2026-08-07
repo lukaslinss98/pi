@@ -1,9 +1,9 @@
 {
   "lastChangelogVersion": "0.84.1",
   "defaultProvider": "openrouter",
-  "defaultModel": "deepseek/deepseek-v4-flash",
+  "defaultModel": "moonshotai/kimi-k3",
   "theme": "ansi-dark",
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "medium",
   "skills": [
     "~/dev/agent-skills/"
   ],
@@ -17,6 +17,7 @@
   "hideThinkingBlock": true,
   "vimMode": true,
   "extensions": [
-    "+extensions/vim-mode.ts"
+    "+extensions/vim-mode.ts",
+    "+extensions/startup-header.ts"
   ]
 }
