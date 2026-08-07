@@ -13,7 +13,8 @@
     "npm:pi-web-access",
     "npm:@juicesharp/rpiv-btw",
     "npm:pi-ghostty-theme",
-    "npm:pi-fancy-loader"
+    "npm:pi-fancy-loader",
+    "git:github.com/ghoseb/pi-askuserquestion"
   ],
   "hideThinkingBlock": true,
   "vimMode": true,
