@@ -1,4 +1,4 @@
-# ~/.config/pi
+# README
 
 My personal configuration for the [pi coding agent](https://github.com/earendil-works/pi-coding-agent). Not a source project — this directory controls how pi behaves globally.
 
