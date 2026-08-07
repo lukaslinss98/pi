@@ -1,0 +1,21 @@
+#!/bin/sh
+# Pre-commit: typecheck + lint when extension sources or tooling change.
+# Wired up automatically by `npm install` (the package.json "prepare" script
+# sets core.hooksPath to .githooks). Bypass with: git commit --no-verify
+
+set -e
+
+# Nothing to check unless extension code or lint/ts tooling is staged.
+if ! git diff --cached --name-only | grep -qE '^(agent/extensions/.*\.ts|eslint\.config\.js|tsconfig\.json|package(-lock)?\.json)$'; then
+  exit 0
+fi
+
+# Don't block commits from environments without the toolchain installed.
+if ! command -v npm >/dev/null 2>&1 || [ ! -d node_modules ]; then
+  echo "pre-commit: skipping checks (node/npm not available; run npm install to enable)" >&2
+  exit 0
+fi
+
+echo "pre-commit: typecheck + lint..."
+npm run typecheck
+npm run lint

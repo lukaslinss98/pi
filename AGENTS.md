@@ -96,6 +96,11 @@ jq . agent/keybindings.json > /dev/null
 jq . agent/ghostty-theme.json > /dev/null
 ```
 
+**Git hooks:** `.githooks/pre-commit` runs `typecheck` + `lint` automatically when
+extension sources or tooling files are staged (config-only commits skip it). The
+`npm install` "prepare" script points `core.hooksPath` at `.githooks`. Bypass with
+`git commit --no-verify`.
+
 **Keep the SDK devDependencies in sync with the globally installed pi version**
 (`npm i -g @earendil-works/pi-coding-agent`); bump them in `package.json` after
 upgrading pi so lint/typecheck match the runtime.
