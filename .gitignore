@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# --- Secrets (never commit) ---
+agent/auth.json
+
+# --- Auto-generated / managed by pi ---
+agent/models-store.json
+agent/bin/
+
+# --- Runtime session logs ---
+agent/sessions/
+
+# --- Context-mode databases, stats, and WAL files ---
+context-mode/
+
+# --- Self-contained pi package installs (own .gitignore) ---
+agent/npm/
+agent/git/
+
+# --- Node / npm ---
+node_modules/
