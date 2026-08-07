@@ -12,7 +12,8 @@
     "npm:@tombell/pi-status",
     "npm:pi-web-access",
     "npm:@juicesharp/rpiv-btw",
-    "npm:pi-ghostty-theme"
+    "npm:pi-ghostty-theme",
+    "npm:pi-fancy-loader"
   ],
   "hideThinkingBlock": true,
   "vimMode": true,
