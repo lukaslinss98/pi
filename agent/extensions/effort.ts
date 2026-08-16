@@ -34,11 +34,11 @@ function getSupportedLevels(model: {
 }
 
 export default function (pi: ExtensionAPI) {
-  pi.registerCommand("effort", {
+  pi.registerCommand("thinking", {
     description: "Set the thinking/reasoning level for the current model",
     handler: async (_args, ctx) => {
       if (!ctx.hasUI) {
-        ctx.ui.notify("/effort requires a TUI session", "error");
+        ctx.ui.notify("/thinking requires a TUI session", "error");
         return;
       }
 
