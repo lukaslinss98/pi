@@ -5,11 +5,11 @@
  *
  *   ── Pi vX.Y.Z ─────────────────────────────────────────────┐
  *   │                                              │          │
- *   │                 [blocky pi logo]             │  Getting started
- *   │                                              │  Ask Pi to build it
- *   │        Let's build something great           │  ────────────────
- *   │     provider/model · high effort             │  Commands
- *   │               ~/Workspace/mypi               │  /compact ...
+ *   │                 [blocky pi logo]             │  Current context
+ *   │                                              │  ~/Workspace/mypi
+ *   │        Let's build something great           │  New session
+ *   │     provider/model · high effort             │  0 / 128k tokens
+ *   │               ~/Workspace/mypi               │
  *   └──────────────────────────────────────────────┘
  *
  * All colors come from the active theme (accent / muted / dim / text), so it
@@ -51,6 +51,10 @@ function shortenCwd(cwd: string): string {
   return cwd.startsWith(home) ? `~${cwd.slice(home.length)}` : cwd;
 }
 
+function formatTokens(tokens: number): string {
+  return tokens >= 1_000 ? `${Math.round(tokens / 1_000)}k` : String(tokens);
+}
+
 function buildHeaderLines(theme: Theme, ctx: ExtensionContext, pi: ExtensionAPI, width: number): string[] {
   const accent = (s: string) => theme.fg("accent", s);
   const muted = (s: string) => theme.fg("muted", s);
@@ -76,12 +80,15 @@ function buildHeaderLines(theme: Theme, ctx: ExtensionContext, pi: ExtensionAPI,
     "",
   ];
 
-  // --- Right column: getting started + commands ---
-  const commands = pi
-    .getCommands()
-    .map((c) => `/${c.name}`)
-    .filter((name) => name !== "/builtin-header")
-    .slice(0, 6);
+  // --- Right column: active project and session context ---
+  const usage = ctx.getContextUsage();
+  const contextWindow = model?.contextWindow;
+  const contextLine = usage?.tokens !== null && usage?.tokens !== undefined && contextWindow
+    ? `${formatTokens(usage.tokens)} / ${formatTokens(contextWindow)} tokens`
+    : contextWindow
+      ? `0 / ${formatTokens(contextWindow)} tokens`
+      : "context usage unavailable";
+  const sessionName = pi.getSessionName() ?? "New session";
 
   // Narrow terminals: skip the right panel.
   const showRightPanel = width >= 90;
@@ -92,13 +99,13 @@ function buildHeaderLines(theme: Theme, ctx: ExtensionContext, pi: ExtensionAPI,
   const rightContent: string[] = [
     "",
     "",
-    bold(accent("Getting started")),
-    muted("Ask Pi to build it"),
+    bold(accent("Current context")),
+    muted(shortenCwd(ctx.cwd)),
     "",
     dim("─".repeat(rightWidth - 1)),
     "",
-    bold(accent("Commands")),
-    ...commands.map((c) => muted(c)),
+    muted(sessionName),
+    dim(contextLine),
   ];
 
   // Vertically center the shorter column; 1 blank row of top/bottom padding.
@@ -149,6 +156,7 @@ export default function (pi: ExtensionAPI) {
   // Refresh the header when the model or thinking level changes.
   pi.on("model_select", (_event, ctx) => applyHeader(ctx));
   pi.on("thinking_level_select", (_event, ctx) => applyHeader(ctx));
+  pi.on("session_info_changed", (_event, ctx) => applyHeader(ctx));
 
   pi.registerCommand("builtin-header", {
     description: "Restore the built-in header",

@@ -1,9 +1,9 @@
 {
   "lastChangelogVersion": "0.84.2",
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-terra",
+  "defaultProvider": "openrouter",
+  "defaultModel": "deepseek/deepseek-v4-flash",
   "theme": "ansi-dark",
-  "defaultThinkingLevel": "medium",
+  "defaultThinkingLevel": "high",
   "skills": [
     "~/dev/agent-skills/"
   ],
@@ -17,6 +17,7 @@
     "git:github.com/ghoseb/pi-askuserquestion"
   ],
   "hideThinkingBlock": true,
+  "quietStartup": true,
   "vimMode": true,
   "extensions": [
     "+extensions/vim-mode.ts",
