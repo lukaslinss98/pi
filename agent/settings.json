@@ -1,9 +1,9 @@
 {
-  "lastChangelogVersion": "0.84.2",
+  "lastChangelogVersion": "0.85.0",
   "defaultProvider": "openrouter",
-  "defaultModel": "deepseek/deepseek-v4-flash",
+  "defaultModel": "openrouter/free",
   "theme": "ansi-dark",
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "minimal",
   "skills": [
     "~/dev/agent-skills/"
   ],
@@ -22,6 +22,7 @@
   "extensions": [
     "+extensions/vim-mode.ts",
     "+extensions/startup-header.ts",
-    "+extensions/effort.ts"
+    "+extensions/effort.ts",
+    "+extensions/tools.ts"
   ]
 }
