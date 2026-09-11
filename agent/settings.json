@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.85.0",
+  "lastChangelogVersion": "0.85.1",
   "defaultProvider": "openrouter",
   "defaultModel": "openrouter/free",
   "theme": "ansi-dark",
@@ -22,7 +22,6 @@
   "extensions": [
     "+extensions/vim-mode.ts",
     "+extensions/startup-header.ts",
-    "+extensions/effort.ts",
     "+extensions/tools.ts"
   ]
 }
