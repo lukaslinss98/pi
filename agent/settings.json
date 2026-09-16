@@ -21,7 +21,8 @@
   "extensions": [
     "+extensions/vim-mode.ts",
     "+extensions/startup-header.ts",
-    "+extensions/tools.ts"
+    "+extensions/tools.ts",
+    "+extensions/ask-mode.ts"
   ],
   "tuiMode": "regular"
 }
