@@ -3,7 +3,7 @@
   "defaultProvider": "openrouter",
   "defaultModel": "openrouter/free",
   "theme": "ansi-dark",
-  "defaultThinkingLevel": "minimal",
+  "defaultThinkingLevel": "medium",
   "skills": [
     "~/dev/agent-skills/"
   ],
@@ -22,5 +22,6 @@
     "+extensions/vim-mode.ts",
     "+extensions/startup-header.ts",
     "+extensions/tools.ts"
-  ]
+  ],
+  "tuiMode": "regular"
 }

@@ -20,3 +20,6 @@ agent/git/
 
 # --- Node / npm ---
 node_modules/
+
+# logs
+*.log
